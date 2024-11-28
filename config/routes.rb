@@ -1,9 +1,8 @@
 Rails.application.routes.draw do
   
-  get "/sign_in", to: "users#sign_in"
-  get "/sign_up", to: "users#sign_up"
-  get "/sign_out", to: "users#sign_out"
-  get "/drop_user", to: "users#drop_user"
+  post "/sign_in", to: "users#sign_in"
+  post "/sign_up", to: "users#sign_up"
+  post "/drop_user", to: "users#drop_user"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
