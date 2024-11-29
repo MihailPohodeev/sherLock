@@ -27,7 +27,7 @@ class UsersController < ApplicationController
   end
 
   # delete user's account.
-  def drop_user()
+  def drop_user
     @request_body = request.body.read
     @params = JSON.parse(@request_body)
 

@@ -3,6 +3,9 @@ Rails.application.routes.draw do
   post "/sign_in", to: "users#sign_in"
   post "/sign_up", to: "users#sign_up"
   post "/drop_user", to: "users#drop_user"
+
+  get "/get_advertisement", to: "advertisements#get_advertisement"
+  post "/create_advertisement", to: "advertisements#create_advertisement"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

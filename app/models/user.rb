@@ -1,5 +1,6 @@
 class User < ApplicationRecord
     has_secure_password
+    has_many :advertisements
     
     validates :surname, presence: true
     validates :name, presence: true
