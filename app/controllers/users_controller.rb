@@ -19,6 +19,8 @@ class UsersController < ApplicationController
     @request_body = request.body.read
     @params = JSON.parse(@request_body)['user']
     @user = User.new(surname: @params['surname'], name: @params['name'], email: @params['email'], password: @params['password'])
+    @confirmation_code = SecureRandom.hex(10)
+    UserMailer.confirmation_email(@user, @confirmation_code).deliver_now
     if @user.save
       render json: {message: "successful User Creation", user: @user.as_json(only: [:id, :surname, :name, :email]), status: "success"}, status: :created
     else
