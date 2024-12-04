@@ -11,9 +11,9 @@ class UsersController < ApplicationController
 
     if @user && @user.authenticate(@params['password'])
       token = self.encode(user_id: @user.id)
-      render json: { status: "success", token: token, user: @user.as_json(only: [:id, :surname, :name, :email]) }, status: :ok
+      render json: { token: token, user: @user.as_json(only: [:id, :surname, :name, :email]) }, status: :ok
     else
-      render json: { message: "Invalid email or password", status: "error" }, status: :unauthorized
+      render json: { message: "Invalid email or password" }, status: :unauthorized
     end
   end
 
@@ -43,16 +43,25 @@ class UsersController < ApplicationController
     @code = JSON.parse(@request_body)['confirmation_code']
 
     redis = Redis.new
-    @data = JSON.parse(redis.get(@email))
+    @data_json = redis.get(@email)
+    if @data_json.nil?
+      keys = redis.keys('*')
+      @dta = keys.map { |key| [key, redis.get(key)] }.to_h
+      render json: {message: "Time has been expired!", redis: @dta}, status: :internal_server_error
+      return
+    end
+
+    @data = JSON.parse(@data_json)
     @user = User.new(surname: @data['surname'], name: @data['name'], email: @data['email'], password: @data['password'])
+    
     if @code != @data['confirmation_code']
       render json: {message: "Wrong confirmation code!"}, status: :unprocessable_entity
       return
     end
     if @user.save
-      render json: {message: "successful User Creation", user: @user.as_json(only: [:id, :surname, :name, :email]), status: "success"}, status: :created
+      render json: {message: "successful User Creation", user: @user.as_json(only: [:id, :surname, :name, :email]) }, status: :created
     else
-      render json: {message: "User creation failed", errors: @user.errors.full_messages, status: "error"}, status: :unprocessable_entity
+      render json: {message: "User creation failed", errors: @user.errors.full_messages}, status: :unprocessable_entity
     end
   end
 
@@ -63,20 +72,20 @@ class UsersController < ApplicationController
 
     @id = get_user_id(@params['user']['token'])
     if @id.nil?
-      render json: {status: 'error', message: 'Invalid token!'}, status: :internal_server_error
+      render json: { message: 'Invalid token!' }, status: :internal_server_error
       return
     end
     
     @user = User.find_by(id: @id)
     if @user.nil?
-      render json: {status: 'error', message: 'No such user!'}, status: :internal_server_error
+      render json: { message: 'No such user!'}, status: :internal_server_error
       return
     end
     @name = @user.surname + ' ' + @user.name
     if @user.destroy
-      render json: {status: 'success', message: 'User ' + @name + ' successfully deleted!'}, status: :ok
+      render json: { message: 'User ' + @name + ' successfully deleted!'}, status: :ok
     else
-      render json: {status: 'error', message: 'Can\'t destroy user'}, status: :errors
+      render json: { message: 'Can\'t destroy user'}, status: :errors
     end
   end
 
