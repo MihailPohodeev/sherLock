@@ -1,3 +1,6 @@
+require 'json'
+require 'redis'
+
 class UsersController < ApplicationController
   # here user shoud login his account.
   def sign_in
@@ -19,8 +22,33 @@ class UsersController < ApplicationController
     @request_body = request.body.read
     @params = JSON.parse(@request_body)['user']
     @user = User.new(surname: @params['surname'], name: @params['name'], email: @params['email'], password: @params['password'])
-    @confirmation_code = SecureRandom.hex(10)
+    if User.find_by(email: @params['email']) != nil
+      render json: {message: "User with such email already exist"}, status: :unprocessable_entity
+      return
+    end
+
+    @confirmation_code = rand(1000..9999)
+    data = { surname: @params['surname'], name: @params['name'], password: @params['password'], email: @params['email'], confirmation_code: @confirmation_code }
+    redis = Redis.new
+    redis.set(@params['email'], data.to_json, ex: 10.minutes)
     UserMailer.confirmation_email(@user, @confirmation_code).deliver_now
+    keys = redis.keys('*')
+    data = keys.map { |key| [key, redis.get(key)] }.to_h
+    render json: {message: "successful send code to email", data: data}, status: :ok
+  end
+
+  def confirm_account
+    @request_body = request.body.read
+    @email = JSON.parse(@request_body)['email']
+    @code = JSON.parse(@request_body)['confirmation_code']
+
+    redis = Redis.new
+    @data = JSON.parse(redis.get(@email))
+    @user = User.new(surname: @data['surname'], name: @data['name'], email: @data['email'], password: @data['password'])
+    if @code != @data['confirmation_code']
+      render json: {message: "Wrong confirmation code!"}, status: :unprocessable_entity
+      return
+    end
     if @user.save
       render json: {message: "successful User Creation", user: @user.as_json(only: [:id, :surname, :name, :email]), status: "success"}, status: :created
     else

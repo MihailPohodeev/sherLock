@@ -53,6 +53,8 @@ Rails.application.configure do
   # 72c1 12cd 5255 2840 7ee2 de15 d45d 5be1 0a2e 2b51 483a fef6 4c5e a981 0e18 31b3
   # 4XZBDSMD8MEPN996L1Q9UTGA
 
+  config.cache_store = :redis_cache_store, { url: 'redis://localhost:6379/0' }
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 

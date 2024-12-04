@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   
   post "/sign_in", to: "users#sign_in"
+  post "/confirm_account", to: "users#confirm_account"
   post "/sign_up", to: "users#sign_up"
   post "/drop_user", to: "users#drop_user"
 
