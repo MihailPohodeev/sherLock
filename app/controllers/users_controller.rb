@@ -13,7 +13,7 @@ class UsersController < ApplicationController
       token = self.encode(user_id: @user.id)
       render json: { token: token, user: @user.as_json(only: [:id, :surname, :name, :email]) }, status: :ok
     else
-      render json: { message: "Invalid email or password" }, status: :unauthorized
+      render json: { message: "Неверный логин или пароль..." }, status: :unauthorized
     end
   end
 
@@ -23,7 +23,7 @@ class UsersController < ApplicationController
     @params = JSON.parse(@request_body)['user']
     @user = User.new(surname: @params['surname'], name: @params['name'], email: @params['email'], password: @params['password'])
     if User.find_by(email: @params['email']) != nil
-      render json: {message: "User with such email already exist"}, status: :unprocessable_entity
+      render json: {message: "Пользователь с таким email уже существует!"}, status: :bad_request
       return
     end
 
@@ -47,7 +47,7 @@ class UsersController < ApplicationController
     if @data_json.nil?
       keys = redis.keys('*')
       @dta = keys.map { |key| [key, redis.get(key)] }.to_h
-      render json: {message: "Time has been expired!", redis: @dta}, status: :internal_server_error
+      render json: {message: "Время ожидания истекло!", redis: @dta}, status: :internal_server_error
       return
     end
 
