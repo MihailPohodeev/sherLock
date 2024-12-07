@@ -55,7 +55,7 @@ class UsersController < ApplicationController
     @user = User.new(surname: @data['surname'], name: @data['name'], email: @data['email'], password: @data['password'])
     
     if @code != @data['confirmation_code']
-      render json: {message: "Wrong confirmation code!"}, status: :unprocessable_entity
+      render json: {message: "Wrong confirmation code!"}, status: :bad_request
       return
     end
     if @user.save

@@ -1,13 +1,14 @@
 class AdvertisementsController < ApplicationController
     def get_advertisement
-        @advert = Advertisement.find(advertisement_params[:id])
+        @advert = Advertisement.find_by(advertisement_params[:id])
         if @advert.nil?
-            render json: {status: 'error', message: 'No such advertisement!'}, status: :internal_server_error
+            render json: {message: 'No such advertisement!'}, status: :internal_server_error
+            return
         end
 
         @user = @advert.user
 
-        render json: {status: 'success', advertisement: @advert.as_json(only: [:title, :description]), owner: @user.as_json(only: [:id, :surname, :name, :email])}, status: :ok
+        render json: {advertisement: @advert.as_json(only: [:title, :description]), owner: @user.as_json(only: [:id, :surname, :name, :email])}, status: :ok
     end
 
     def create_advertisement
