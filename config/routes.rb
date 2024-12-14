@@ -1,12 +1,16 @@
 Rails.application.routes.draw do
   
-  post 'sign_in', to: 'users#login'
-  post 'confirm_account', to: 'users#confirm'
-  post 'sign_up', to: 'users#create'
-  delete 'drop_user', to: 'users#destroy' # This can be used to delete a user
+  resources :users, only: [:create, :show, :destroy] do
+    # Вложенный ресурс для объявлений пользователя
+    get 'advertisements', to: 'users#advertisement_of_user', on: :member
+  end
+
+  # Для входа в систему и подтверждения аккаунта можно использовать отдельные маршруты
+  post 'users/login', to: 'users#login'
+  post 'users/confirm', to: 'users#confirm'
 
 
-  resources :advertisements, only: [ :show, :create] do
+  resources :advertisements, only: [ :show, :create, :index] do
     collection do
       get 'all', to: 'advertisements#all' # Для получения всех объявлений
     end

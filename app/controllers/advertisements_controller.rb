@@ -38,6 +38,7 @@ class AdvertisementsController < ApplicationController
         @adv = Advertisement.all
         render json: @adv        
     end
+
 private
 
     def advertisement_params

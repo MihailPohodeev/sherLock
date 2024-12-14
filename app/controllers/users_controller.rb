@@ -2,6 +2,7 @@ require 'json'
 require 'redis'
 
 class UsersController < ApplicationController
+  
   # here user shoud login his account.
   def login
     @request_body = request.body.read
@@ -17,6 +18,12 @@ class UsersController < ApplicationController
     end
   end
 
+  # get user's data
+  def show
+    user = User.find_by(params[:id])
+    render json: user.as_json(only: [:id, :surname, :name])
+  end
+
   # step of registration.
   def create
     @request_body = request.body.read
@@ -28,7 +35,7 @@ class UsersController < ApplicationController
     end
 
     @confirmation_code = rand(1000..9999)
-    data = { surname: @params['surname'], name: @params['name'], password: @params['password'], email: @params['email'], confirmation_code: @confirmation_code }
+    data = { surname: @params['surname'], name: @params['name'], password: @params['password'], email: @params['email'] }
     redis = Redis.new
     redis.set(@params['email'], data.to_json, ex: 10.minutes)
     UserMailer.confirmation_email(@user, @confirmation_code).deliver_now
@@ -89,11 +96,29 @@ class UsersController < ApplicationController
     end
   end
 
+  #return all user's advertisements.
+  def advertisement_of_user
+    user = User.find_by(id: params[:id])
+    if user
+        advertisements = user.advertisements.includes(:user)
+        ads_json = advertisements.map do |advert|
+            {
+                advertisement: advert.as_json(),
+                owner: advert.user.as_json(only: [:id, :surname, :name, :email]),
+                photos: advert.photos.map { |photo| url_for(photo) }
+            }
+        end
+        render json: ads_json, status: :ok
+    else
+        render json: { error: 'User not found' }, status: :not_found
+    end
+end
+
   private
 
   # permit user's data
   def user_params
-    params.require(:user).permit(:surname, :name, :email, :password, :id, :tocken)
+    params.require(:user).permit(:surname, :name, :email, :password, :id, :tocken, :avatar)
   end
 
   # work with token
