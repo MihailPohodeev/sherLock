@@ -3,7 +3,7 @@ require 'redis'
 
 class UsersController < ApplicationController
   # here user shoud login his account.
-  def sign_in
+  def login
     @request_body = request.body.read
     @params = JSON.parse(@request_body)['user']
 
@@ -18,7 +18,7 @@ class UsersController < ApplicationController
   end
 
   # step of registration.
-  def sign_up
+  def create
     @request_body = request.body.read
     @params = JSON.parse(@request_body)['user']
     @user = User.new(surname: @params['surname'], name: @params['name'], email: @params['email'], password: @params['password'])
@@ -37,7 +37,7 @@ class UsersController < ApplicationController
     render json: {message: "successful send code to email", data: data}, status: :ok
   end
 
-  def confirm_account
+  def confirm
     @request_body = request.body.read
     @email = JSON.parse(@request_body)['email']
     @code = JSON.parse(@request_body)['confirmation_code']
@@ -66,7 +66,7 @@ class UsersController < ApplicationController
   end
 
   # delete user's account.
-  def drop_user
+  def destroy
     @request_body = request.body.read
     @params = JSON.parse(@request_body)
 

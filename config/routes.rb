@@ -1,12 +1,17 @@
 Rails.application.routes.draw do
   
-  post "/sign_in", to: "users#sign_in"
-  post "/confirm_account", to: "users#confirm_account"
-  post "/sign_up", to: "users#sign_up"
-  post "/drop_user", to: "users#drop_user"
+  post 'sign_in', to: 'users#login'
+  post 'confirm_account', to: 'users#confirm'
+  post 'sign_up', to: 'users#create'
+  delete 'drop_user', to: 'users#destroy' # This can be used to delete a user
 
-  get "/get_advertisement", to: "advertisements#get_advertisement"
-  post "/create_advertisement", to: "advertisements#create_advertisement"
+
+  resources :advertisements, only: [ :show, :create] do
+    collection do
+      get 'all', to: 'advertisements#all' # Для получения всех объявлений
+    end
+  end
+  # get "/get_"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
