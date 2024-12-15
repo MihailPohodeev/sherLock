@@ -1,7 +1,7 @@
 class User < ApplicationRecord
     has_secure_password
     has_many :advertisements
-    # has_one_attached :avatar
+    has_one_attached :avatar
     
     validates :surname, presence: true
     validates :name, presence: true
