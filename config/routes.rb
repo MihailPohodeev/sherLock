@@ -3,6 +3,9 @@ Rails.application.routes.draw do
   resources :users, only: [:create, :show, :destroy, :update] do
     # Вложенный ресурс для объявлений пользователя
     get 'advertisements', to: 'users#advertisement_of_user', on: :member
+    member do
+      patch :update_avatar
+    end
   end
 
   # Для входа в систему и подтверждения аккаунта можно использовать отдельные маршруты

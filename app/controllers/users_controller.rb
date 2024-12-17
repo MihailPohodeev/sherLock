@@ -12,7 +12,7 @@ class UsersController < ApplicationController
 
     if @user && @user.authenticate(@params['password'])
       token = self.encode(user_id: @user.id)
-      render json: { token: token, user: @user.as_json(only: [:id, :surname, :name, :email]) }, status: :ok
+      render json: { token: token, user: user_data(@user) }, status: :ok
     else
       render json: { message: "Неверный логин или пароль..." }, status: :unauthorized
     end
@@ -21,7 +21,10 @@ class UsersController < ApplicationController
   # get user's data
   def show
     user = User.find_by(params[:id])
-    render json: user.as_json(only: [:id, :surname, :name])
+    if user.nil?
+      render json: {message: "User not found!"}, status: :not_found
+    end
+    render json: user_data(user), status: :ok #user.as_json(only: [:id, :surname, :name])
   end
 
   # step of registration.
@@ -35,7 +38,7 @@ class UsersController < ApplicationController
     end
 
     @confirmation_code = rand(1000..9999)
-    data = { surname: @params['surname'], name: @params['name'], password: @params['password'], email: @params['email'] }
+    data = { surname: @params['surname'], name: @params['name'], password: @params['password'], email: @params['email'], confirmation_code: @confirmation_code }
     redis = Redis.new
     redis.set(@params['email'], data.to_json, ex: 10.minutes)
     UserMailer.confirmation_email(@user, @confirmation_code).deliver_now
@@ -45,24 +48,26 @@ class UsersController < ApplicationController
   end
 
   def confirm
-    @request_body = request.body.read
-    @email = JSON.parse(@request_body)['email']
-    @code = JSON.parse(@request_body)['confirmation_code']
+    @email = params['email']
+    @code = params['confirmation_code']
+
+    puts @email
+    puts @code
 
     redis = Redis.new
     @data_json = redis.get(@email)
     if @data_json.nil?
-      keys = redis.keys('*')
-      @dta = keys.map { |key| [key, redis.get(key)] }.to_h
-      render json: {message: "Время ожидания истекло!", redis: @dta}, status: :internal_server_error
+      render json: {message: "Время ожидания истекло!"}, status: :internal_server_error
       return
     end
 
     @data = JSON.parse(@data_json)
     @user = User.new(surname: @data['surname'], name: @data['name'], email: @data['email'], password: @data['password'])
+    puts user_data(@user)
+    puts @data
     
     if @code != @data['confirmation_code']
-      render json: {message: "Wrong confirmation code!"}, status: :bad_request
+      render json: {message: "Неверный код подтверждения!"}, status: :bad_request
       return
     end
     if @user.save
@@ -98,8 +103,9 @@ class UsersController < ApplicationController
 
   def update
     @user = User.find(params[:id])
-    if @user.update(user_params)
-      render json: { message: 'Avatar uploaded successfully' }, status: :ok
+    Rails.logger.debug("Received params: #{params.inspect}")
+    if @user.update(avatar_params)
+      render json: { message: 'User updated successfully', user: user_data(@user) }, status: :ok
     else
       render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
     end
@@ -121,13 +127,36 @@ class UsersController < ApplicationController
     else
         render json: { error: 'User not found' }, status: :not_found
     end
-end
+  end
+
+  def update_avatar
+    if @user.update(avatar_params)
+      render json: { message: 'Avatar uploaded successfully', avatar_url: url_for(@user.avatar) }, status: :ok
+    else
+      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
 
   private
 
   # permit user's data
   def user_params
-    params.require(:user).permit(:surname, :name, :email, :password, :id, :tocken, :avatar)
+    params.require(:user).permit(:surname, :name, :email, :password, :id, :token, :avatar)
+  end
+
+  def avatar_params
+    params.require(:user).permit(:avatar, :id, :name, :surname)
+  end
+
+  # user's data.
+  def user_data(user)
+    {
+      id: user.id,
+      name: user.name,
+      surname: user.surname,
+      email: user.email,
+      avatar: user.avatar.attached? ? url_for(user.avatar) : nil # Generates the URL for the avatar
+    }
   end
 
   # work with token
