@@ -45,7 +45,7 @@ ActiveRecord::Schema[8.0].define(version: 2024_11_29_110403) do
     t.string "location"
     t.integer "user_id", null: false
     t.string "status"
-    t.string "state"
+    t.string "sort"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_advertisements_on_user_id"
