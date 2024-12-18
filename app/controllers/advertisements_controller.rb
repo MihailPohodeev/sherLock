@@ -35,13 +35,34 @@ class AdvertisementsController < ApplicationController
     end
 
     def all
-        @adv = Advertisement.all
-        render json: @adv        
+        @adv = Advertisement.all #.includes(:photos) # Eager load photos to avoid N+1 queries
+    if @adv
+        ads_json = @adv.map do |advert|
+            {
+                advertisement: advert.as_json(),
+                owner: advert.user.as_json(only: [:id, :surname, :name, :email]),
+                photos: advert.photos.map { |photo| url_for(photo) }
+            }
+        end
+        render json: ads_json, status: :ok
+    else
+        render json: { error: 'User not found' }, status: :not_found
+    end
     end
 
 private
 
     def advertisement_params
         params.require(:advertisement).permit(:title, :description, :sort, photos: [])
+    end
+
+    def user_data(adv)
+        {
+          id: adv.id,
+          title: adv.title,
+          description: adv.description,
+          location: adv.location,
+          photos: adv.photos_urls,
+        }
     end
 end
