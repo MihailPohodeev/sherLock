@@ -53,7 +53,7 @@ class AdvertisementsController < ApplicationController
 private
 
     def advertisement_params
-        params.require(:advertisement).permit(:title, :description, :sort, photos: [])
+        params.require(:advertisement).permit(:title, :description, :sort, :kind, :status, :location, photos: [])
     end
 
     def user_data(adv)

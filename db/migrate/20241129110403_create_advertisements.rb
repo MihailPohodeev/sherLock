@@ -7,6 +7,7 @@ class CreateAdvertisements < ActiveRecord::Migration[8.0]
       t.references :user, null: false, foreign_key: true
       t.string :status
       t.string :sort
+      t.string :kind
       
       t.timestamps
     end
