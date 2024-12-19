@@ -8,10 +8,16 @@ class AdvertisementsController < ApplicationController
 
         @user = @advert.user
         photos_urls = @advert.photos.map { |photo| url_for(photo) }
+        avatar_url = @user.avatar.attached? ? url_for(@user.avatar) : nil
 
         render json: {
-        advertisement: @advert.as_json(include: :photos),
-        owner: @user.as_json(only: [:id, :surname, :name, :email]),
+        advertisement: @advert.as_json(),
+        owner: {
+                id: @user.id,
+                surname: @user.surname,
+                name: @user.name,
+                avatar: avatar_url # Ensure avatar is included here
+            },
         photos: photos_urls
     }, status: :ok
     end
