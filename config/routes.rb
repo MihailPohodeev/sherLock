@@ -16,6 +16,7 @@ Rails.application.routes.draw do
   resources :advertisements, only: [ :show, :create, :index] do
     collection do
       get 'all', to: 'advertisements#all' # Для получения всех объявлений
+      get 'filter', to: 'advertisements#filter'
     end
   end
   # get "/get_"

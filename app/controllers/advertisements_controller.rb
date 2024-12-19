@@ -42,18 +42,52 @@ class AdvertisementsController < ApplicationController
 
     def all
         @adv = Advertisement.all #.includes(:photos) # Eager load photos to avoid N+1 queries
-    if @adv
-        ads_json = @adv.map do |advert|
+        if @adv
+            ads_json = @adv.map do |advert|
+                {
+                    advertisement: advert.as_json(),
+                    owner: advert.user.as_json(only: [:id, :surname, :name, :email]),
+                    photos: advert.photos.map { |photo| url_for(photo) }
+                }
+            end
+            render json: ads_json, status: :ok
+        else
+            render json: { error: 'User not found' }, status: :not_found
+        end
+    end
+    
+    def filter
+        # Extract parameters from the request
+        sort = params[:sort]
+        kind = params[:kind]
+        text = params[:text]
+
+        ads = Advertisement.all
+
+        # Filter by type if provided
+        if sort.present?
+            puts 'SSOORRTT'
+            ads = ads.where(sort: sort) # Assuming 'status' is used to denote 'found' or 'lost'
+        end
+
+        if kind.present?
+            ads = ads.where(kind: kind)
+        end
+
+        if text.present?
+            # Use LOWER for case-insensitive search in SQLite
+            ads = ads.where("LOWER(title) LIKE LOWER(?) OR LOWER(description) LIKE LOWER(?)", "%#{text}%", "%#{text}%")
+        end
+
+        ads_json = ads.map do |advert|
             {
-                advertisement: advert.as_json(),
-                owner: advert.user.as_json(only: [:id, :surname, :name, :email]),
-                photos: advert.photos.map { |photo| url_for(photo) }
+              advertisement: advert.as_json(),
+              owner: advert.user.as_json(only: [:id, :surname, :name, :email]),
+              photos: advert.photos.map { |photo| url_for(photo) }
             }
         end
+        
         render json: ads_json, status: :ok
-    else
-        render json: { error: 'User not found' }, status: :not_found
-    end
     end
 
 private
