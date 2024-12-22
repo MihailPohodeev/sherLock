@@ -1,23 +1,27 @@
 Rails.application.routes.draw do
-  
-  resources :users, only: [:create, :show, :destroy, :update] do
+  resources :users, only: [ :create, :show, :destroy, :update ] do
     # Вложенный ресурс для объявлений пользователя
-    get 'advertisements', to: 'users#advertisement_of_user', on: :member
+    get "advertisements", to: "users#advertisement_of_user", on: :member
     member do
       patch :update_avatar
     end
   end
 
   # Для входа в систему и подтверждения аккаунта можно использовать отдельные маршруты
-  post 'users/login', to: 'users#login'
-  post 'users/confirm', to: 'users#confirm'
+  post "users/login", to: "users#login"
+  post "users/confirm", to: "users#confirm"
 
 
-  resources :advertisements, only: [ :show, :create, :index] do
+  resources :advertisements, only: [ :show, :create, :index ] do
     collection do
-      get 'all', to: 'advertisements#all' # Для получения всех объявлений
-      get 'filter', to: 'advertisements#filter'
+      get "all", to: "advertisements#all" # Для получения всех объявлений
+      get "filter", to: "advertisements#filter"
     end
+  end
+
+  # Добавьте маршруты для чатов и сообщений
+  resources :chats, only: [ :create, :show ] do
+    resources :messages, only: [ :create ]
   end
   # get "/get_"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

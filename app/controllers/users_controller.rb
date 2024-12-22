@@ -38,10 +38,11 @@ class UsersController < ApplicationController
     end
 
     @confirmation_code = rand(1000..9999)
+    puts @confirmation_code
     data = { surname: @params['surname'], name: @params['name'], password: @params['password'], email: @params['email'], confirmation_code: @confirmation_code }
     redis = Redis.new
     redis.set(@params['email'], data.to_json, ex: 10.minutes)
-    UserMailer.confirmation_email(@user, @confirmation_code).deliver_now
+    #UserMailer.confirmation_email(@user, @confirmation_code).deliver_now
     keys = redis.keys('*')
     data = keys.map { |key| [key, redis.get(key)] }.to_h
     render json: {message: "successful send code to email", data: data}, status: :ok
