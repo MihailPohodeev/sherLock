@@ -18,7 +18,7 @@ module Naxodka
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do
-        origins 'http://127.0.0.1:3000' # или 'http://localhost:3000'
+        origins 'http://0.0.0.0:3000' # Specify allowed origins
         resource '*',
           headers: :any,
           methods: [:get, :post, :options, :put, :delete],

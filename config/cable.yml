@@ -1,5 +1,7 @@
 development:
   adapter: async
+  host: '0.0.0.0'
+  port: 3000
 
 test:
   adapter: test
@@ -8,6 +10,7 @@ production:
   adapter: redis
   url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
   channel_prefix: naxodka_production
-  allowed_request_origins:
-    - http://127.0.0.1:3000
-    - http://localhost:3000
+  host: '0.0.0.0'
+  # allowed_request_origins:
+  #   - http://127.0.0.1:3000
+  #   - http://localhost:3000
