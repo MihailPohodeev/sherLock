@@ -50,11 +50,16 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def get_messages(data)
-    chat = Chat.find_by(user_id: data['UserID'], advertisement_id: data['advertisementID'])
+    # user = User.find_by(id: data['userID'])
+    # puts user.as_json
+    # adv = Advertisement.find_by(id: data['advertisementID'])
+    # puts adv.as_json
+    chat = Chat.find_by(user_id: data['userID'], advertisement_id: data['advertisementID'])
     if chat.nil?
       puts 'BEDA'
     else
-      puts chat.as_json
+      messages = chat.messages
+      ActionCable.server.broadcast("user_#{data['userID']}", {title: "list_of_messages", body: messages.as_json})
     end
   end
 end
