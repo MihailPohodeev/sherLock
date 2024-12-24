@@ -16,6 +16,16 @@ module Naxodka
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    config.middleware.insert_before 0, Rack::Cors do
+      allow do
+        origins 'http://127.0.0.1:3000' # или 'http://localhost:3000'
+        resource '*',
+          headers: :any,
+          methods: [:get, :post, :options, :put, :delete],
+          credentials: true
+      end
+    end
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
