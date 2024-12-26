@@ -20,7 +20,7 @@ class UsersController < ApplicationController
 
   # get user's data
   def show
-    user = User.find_by(params[:id])
+    user = User.find_by(id: params[:id])
     if user.nil?
       render json: {message: "User not found!"}, status: :not_found
     end
