@@ -22,6 +22,9 @@ Rails.application.routes.draw do
   # Добавьте маршруты для чатов и сообщений
   resources :chats, only: [ :create, :show ] do
     resources :messages, only: [ :create ]
+    collection do
+      get "get", to: "chats#get" # Для получения всех объявлений
+    end
   end
 
   mount ActionCable.server => '/cable'
